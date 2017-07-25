@@ -9,4 +9,32 @@ Firmware to create a data logger for BITalino (r)evolution based on the OpenLog 
 
 ## How to use the decoder
 
-This work was partially supported by the IT – Instituto de Telecomunicações under the grant UID/EEA/50008/2013 “SmartHeart” (https://www.it.pt/Projects/Index/4465).
+### Arguments
+
+The decoder accepts 1 out of 3 arguments:
+
+```
+-h, --help              show this help message and exit
+-p PATHNAME, --pathname PATHNAME
+                        the pathname of the folder to decode
+-f FILENAME, --filename FILENAME
+                        the filename of the single file to decode
+```
+One of the arguments -p/--pathname -f/--filename is required.
+
+### How to run the decoder?
+The decoder can be executed as a script or treated as a module that can be imported. Below there are examples of how to run it for a single file, for both types of execution.  
+
+* Script
+```bash
+python decoder.py -f "C:\Users\margarida\logs\LOG00000.BIN"
+```
+
+* Module
+```c#
+import decoder
+decoder.main([r'-f C:\Users\margarida\logs\LOG00000.BIN'])
+```
+
+Acknowledgments:
+This work was partially supported by the IT – Instituto de Telecomunicações under the grant UID/EEA/50008/2013 "SmartHeart" (https://www.it.pt/Projects/Index/4465).
