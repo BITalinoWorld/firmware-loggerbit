@@ -1,0 +1,2 @@
+1000,live,1234,00,00
+sampling rate,mode,channels,trigger,digital IO
