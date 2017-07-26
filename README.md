@@ -51,5 +51,5 @@ import decoder
 decoder.main([r'-f C:\Users\margarida\logs\LOG00000.BIN'])
 ```
 
-Acknowledgments:
+## Acknowledgments:
 This work was partially supported by the IT – Instituto de Telecomunicações under the grant UID/EEA/50008/2013 "SmartHeart" (https://www.it.pt/Projects/Index/4465).
