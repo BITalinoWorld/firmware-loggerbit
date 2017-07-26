@@ -1,10 +1,13 @@
 '''
     2017
-    Margarida Reis
+    Margarida Reis & Hugo Silva
     Técnico Lisboa
     IT - Instituto de Telecomunicações
 
     Made in Portugal
+
+    Acknowledgments: This work was partially supported by the IT – Instituto de Telecomunicações
+    under the grant UID/EEA/50008/2013 "SmartHeart" (https://www.it.pt/Projects/Index/4465).
 '''
 
 from __future__ import division

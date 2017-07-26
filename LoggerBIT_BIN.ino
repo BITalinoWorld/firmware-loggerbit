@@ -1,10 +1,13 @@
 /*
  2017
- Margarida Reis
+ Margarida Reis & Hugo Silva
  Técnico Lisboa
  IT - Instituto de Telecomunicações
 
  Made in Portugal
+
+ Acknowledgments: This work was partially supported by the IT – Instituto de Telecomunicações
+ under the grant UID/EEA/50008/2013 "SmartHeart" (https://www.it.pt/Projects/Index/4465).
 
  OpenLog hardware and firmware are released under the Creative Commons Share Alike v3.0 license.
  http://creativecommons.org/licenses/by-sa/3.0/
@@ -226,7 +229,7 @@ void readConfigFile(void) {
   int len = strlen(settingsArray);
   char settingString[MAX_SET_LENGTH];
   char mode[MAX_SET_LENGTH];
-  
+
   byte i = 0, j = 0, settingNumber = 0;
   for (i = 0; i < len; i++) {
     // pick out one setting from the line of text
@@ -268,7 +271,7 @@ void readConfigFile(void) {
       strcpy(mode, settingString);
     }
 
-    else if (settingNumber == 2) { // channels 
+    else if (settingNumber == 2) { // channels
       // configure the channels to acquire afterwards, meaning BITalino will enter live (or simulated) mode
       no_channels = strlen(settingString);
 #if DEBUG
@@ -401,7 +404,7 @@ void readConfigFile(void) {
     workingFile.print(settingsArray[i]);
   workingFile.println();
 
-  return; 
+  return;
 }
 
 byte appendFile(void) {
@@ -429,19 +432,19 @@ byte appendFile(void) {
 #endif
 
   digitalWrite(stat, HIGH); // turn on indicator LED
-  
+
   if (sd_logging == 0) {
     while (1) {
 		  digitalWrite(stat, LOW); // turn off stat LED
-		  // fetch a single byte at a time: we need to know the exact number of bytes the system receives so we can analyze the digital inputs	  
+		  // fetch a single byte at a time: we need to know the exact number of bytes the system receives so we can analyze the digital inputs
 		  if (NewSerial.available() > 0) {
 			  int incomingByte = NewSerial.read();
 			  byte_counter++;
 			  if (byte_counter == (no_bytes - 1)) { // isolate the byte containing the state of the digital inputs (I1 and I2)
 				  incomingByte = (uint8_t)incomingByte;
 				  incomingByte = (incomingByte & 0xC0) >> 6;
-				  uint8_t i1_cur_state = (incomingByte & 0b10) >> 1; 
-				  uint8_t i2_cur_state = (incomingByte & 0b01); 
+				  uint8_t i1_cur_state = (incomingByte & 0b10) >> 1;
+				  uint8_t i2_cur_state = (incomingByte & 0b01);
 				  if (i1 == 1 && i2 == 0) { // look for change in input I1 only
 					  if (i1_cur_state == !i1_init_state)
 						  last_read = 1; // fetch the last byte with the sequence number + CRC so the logging to the SD card is done from the beginning
@@ -449,7 +452,7 @@ byte appendFile(void) {
 				  else if (i1 == 0 && i2 == 1) { // look for change in input I2 only
 					  if (i2_cur_state == !i2_init_state)
 						  last_read = 1;
-				  }	
+				  }
 				  else { // look for change in both inputs
 					  if ((i1_cur_state == !i1_init_state) && (i2_cur_state == !i2_init_state))
 						  last_read = 1;
@@ -466,13 +469,13 @@ byte appendFile(void) {
 		  }
 	  }
   }
-  
+
   // start recording incoming characters
   while (1) {
   	charsToRecord = NewSerial.read(buff, sizeof(buff));
   	if (charsToRecord > 0) {
       charsCount += charsToRecord;
-    	toggleLED(stat); 
+    	toggleLED(stat);
     	workingFile.write(buff, charsToRecord);
   	}
   	if (charsCount >= CHAR_COUNT) {
