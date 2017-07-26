@@ -1,7 +1,22 @@
 # LoggerBIT Firmware
 Firmware to create a data logger for BITalino (r)evolution based on the OpenLog by SparkFun
 
-## What to change in the OpenLog board
+## Programming the OpenLog with the LoggerBIT firmware
+Loading the LoggerBIT firmware onto the OpenLog is the first thing to do. This process **must** be done **without making any physical changes** to the OpenLog board that is currently shipped by SparkFun. 
+
+1. Download the [Arduino IDE version 1.6.5](https://www.arduino.cc/en/Main/OldSoftwareReleases), a verified known good version.
+2. Download the [LoggerBIT firmware](https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/LoggerBIT_BIN.ino).
+3. Download the required libraries:
+   * Bill Greiman's [SerialPort library](https://github.com/greiman/SerialPort)
+   * Bill Greiman's [SdFat library](https://github.com/greiman/SdFat)
+4. Install the libraries into Arduino. Check [here](https://www.arduino.cc/en/Guide/Libraries) for more detailed instructions on how to do it.
+5. Modify the **SerialPort.h** file found in the **\Arduino\Libraries\SerialPort** directory. Change `BUFFERED_TX` to `0` and `ENABLE_RX_ERROR_CHECKING` to `0`.
+6. Connect the OpenLog to the computer via an FTDI board. Check [here](https://learn.sparkfun.com/tutorials/openlog-hookup-guide#hardware-hookup) for more detailed instructions on how to make the connection between the two boards.
+7. Open the LoggerBIT sketch with the Arduino IDE, select the **Arduino/Genuino Uno** board setting under **Tools>Board**, and select the proper COM port for the FTDI board under **Tools>Port**.
+8. Upload the code and it's done!
+
+## What to change in the OpenLog board for using hardware flow-control
+Once the OpenLog is loaded with the LoggerBIT firmware, the board has to be physically adjusted, by including the necessary extra wiring for hardware flow-control to properly function.
 
 ## How to configure the BITalino acquisition settings
 
