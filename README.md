@@ -16,7 +16,17 @@ Loading the LoggerBIT firmware onto the OpenLog is the first thing to do. This p
 8. Upload the code and it's done!
 
 ## What to change in the OpenLog board for using hardware flow-control
-Once the OpenLog is loaded with the LoggerBIT firmware, the board has to be physically adjusted, by including the necessary extra wiring for hardware flow-control to properly function.
+Once the OpenLog is loaded with the LoggerBIT firmware, the board has to be physically adjusted, by including the necessary extra wiring, so the hardware flow-control mechanism can properly function.
+
+You will need:
+* A male header with 5 pins (right angle)
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/5-way-header.jpg" width="128">
+* Thin wire
+* Soldering iron and thin solder
+
+As such, with the board facing up and with the text facing you, solder one end of a shunt directly on the **2nd pin from the right, on the top side of the MCU** and the other end to the **GRN pad**, as seen in the figure below.
+
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/OpenLog_Flow_Control.png" width="384">
 
 ## How to configure the BITalino acquisition settings
 
