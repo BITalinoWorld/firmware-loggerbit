@@ -18,6 +18,8 @@ Loading the LoggerBIT firmware onto the OpenLog is the first thing to do. This p
 ## What to change in the OpenLog board for using hardware flow-control
 Once the OpenLog is loaded with the LoggerBIT firmware, the board has to be physically adjusted, by including the necessary extra wiring for hardware flow-control to properly function.
 
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/OpenLog_Flow_Control.png" width="384">
+
 ## How to configure the BITalino acquisition settings
 
 ## Recommended microSD cards
