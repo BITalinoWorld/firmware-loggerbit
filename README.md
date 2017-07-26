@@ -20,13 +20,22 @@ Once the OpenLog is loaded with the LoggerBIT firmware, the board has to be phys
 
 You will need:
 * A male header with 5 pins (right angle)
-<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/5-way-header.jpg" width="128">
-* Thin wire
+ <img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/5-way-header.jpg" width="128">
+
+* Thin wire (for the shunt)
 * Soldering iron and thin solder
 
-As such, with the board facing up and with the text facing you, solder one end of a shunt directly on the **2nd pin from the right, on the top side of the MCU** and the other end to the **GRN pad**, as seen in the figure below.
+Firstly, **bend the leftmost pin of the header**, so that it stays in a straight horizontal direction instead of the original right angle.
 
-<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/OpenLog_Flow_Control.png" width="384">
+*insert image*
+
+Afterwards, place the header on the pads of OpenLog UART interface (at the bottom), so that the bent pin stays over the **GRN pad**. **Solder each of the 5 remaining pins** with the corresponding pad.
+
+*insert image*
+
+Solder one end of the shunt directly on the **2nd pin from the right, on the top side of the MCU** and the other end to the **header pin that hangs above the GRN pad**. Make sure that there is **no solder touching the GRN pad**, it has to remain not connected.
+
+*insert image*
 
 ## How to configure the BITalino acquisition settings
 
