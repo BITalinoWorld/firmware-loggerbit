@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     2017
     Margarida Reis & Hugo Silva
