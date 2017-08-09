@@ -193,19 +193,52 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
         else:
             openlog_file.seek(header_tell)
         header = header.rstrip()
-        csv_line = header[2:].decode('utf-8')
-        csv_settings = csv_line.split(',')
-        channels = ''.join(n for n in csv_settings[2] if n.isdigit())
-        no_channels = len(channels)
-        sampling_rate = int(csv_settings[0])
-
-        print(csv_settings)
 
         decoded = {}
         decoded['settings'] = {}
+        if chr(header[0]) == '#':  # ensure retro-compatibility
+            csv_line = header[2:].decode('utf-8')
+            csv_settings = csv_line.split(',')
+            channels = ''.join(n for n in csv_settings[2] if n.isdigit())
+            no_channels = len(channels)
+            sampling_rate = int(csv_settings[0])
+            decoded['settings']['mode'] = csv_settings[1]
+        else:
+            header = int.from_bytes(header, byteorder='big')
+            binary_channels = (header & 0x03F0) >> 4
+            channels = ''
+            if binary_channels & 0x01:
+                channels += str(1)
+            if binary_channels & 0x02:
+                channels += str(2)
+            if binary_channels & 0x04:
+                channels += str(3)
+            if binary_channels & 0x08:
+                channels += str(4)
+            if binary_channels & 0x10:
+                channels += str(5)
+            if binary_channels & 0x30:
+                channels += str(6)
+            no_channels = len(channels)
+            binary_sampling_rate = (header & 0x1800) >> 11
+            if binary_sampling_rate == 0:
+                sampling_rate = 1
+            elif binary_sampling_rate == 1:
+                sampling_rate = 10
+            elif binary_sampling_rate == 2:
+                sampling_rate = 100
+            elif binary_sampling_rate == 3:
+                sampling_rate = 1000
+            binary_mode = (header & 0x0400) >> 10
+            if binary_mode == 0:
+                decoded['settings']['mode'] = 'live'
+            elif binary_mode == 1:
+                decoded['settings']['mode'] = 'simulated'
+
         decoded['settings']['channels'] = channels
         decoded['settings']['sampling rate'] = sampling_rate
-        decoded['settings']['mode'] = csv_settings[1]
+        print(decoded)
+
         header = encode_opensignals_header(decoded)
         np.savetxt(opensignals_file, [], header=header)
 
