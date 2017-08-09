@@ -9,14 +9,14 @@
  Acknowledgments: This work was partially supported by the IT – Instituto de Telecomunicações
  under the grant UID/EEA/50008/2013 "SmartHeart" (https://www.it.pt/Projects/Index/4465).
 
- OpenLog hardware and firmware are released under the Creative Commons Share Alike v3.0 license.
+ OpenLog hardware and firmware are released under the Creative Commons Share Alike v3.0 license
  http://creativecommons.org/licenses/by-sa/3.0/
- Feel free to use, distribute, and sell varients of OpenLog. All we ask is that you include attribution of 'Based on OpenLog by SparkFun'.
+ Feel free to use, distribute, and sell varients of OpenLog. All we ask is that you include attribution of 'Based on OpenLog by SparkFun'
 
  OpenLog is based on the work of Bill Greiman and sdfatlib: https://github.com/greiman/SdFat-beta
 
  This version has the command line interface and config file stripped out in order to simplify the overall
- program and increase the receive buffer (RAM).
+ program and increase the receive buffer (RAM)
 
  The only option is the interface baud rate and it has to be set in code, compiled, and loaded onto OpenLog. To
  see how to do this please refer to https://github.com/sparkfun/OpenLog/wiki/Flashing-Firmware
@@ -73,7 +73,7 @@ SdFile workingFile;
 // variables related to the configurations from the JSON file
 uint8_t no_channels = 4; // by default log 4 channels
 uint8_t sd_logging = 1; // by default the system samples and logs 4 channels @ 1 kHz, while in live mode
-uint8_t i1 = 0, i2 = 0;
+boolean i1 = 0, i2 = 0;
 byte digital_cmd = 0x00;
 
 // handle errors by printing the error type and blinking LEDs in certain way
@@ -197,6 +197,8 @@ void openFile(char* fileName) {
 void readConfigFile(void) {
   SdFile configFile;
 
+  uint16_t binary_header = 0x0000;
+
   if (!sd.chdir()) systemError(ERROR_ROOT_INIT); // open the root directory
 
   char configFileName[strlen(CFG_FILENAME)];
@@ -204,12 +206,20 @@ void readConfigFile(void) {
 
   if (!configFile.open(configFileName, O_READ)) {
     configFile.close();
-    // if there is no configuration file, then set the default parameters: acquire 4 channels in live mode @ 1 kHz (the sampling rate is the default one)
+    // if there is no configuration file, then set the default parameters
+    // acquire 4 channels (A1-A4) in live mode @ 1 kHz (the sampling rate is the default one)
     NewSerial.write((byte)0x3D);
 #if DEBUG
     NewSerial.println();
     NewSerial.println(F("no configuration file found, working with the defaults"));
 #endif
+    binary_header = 0x18F0;
+    // before we start logging, store the user-defined CSV configurations at the beginning of the log file (binary header)
+    toggleLED(stat);
+    workingFile.write(binary_header >> 8);
+    workingFile.write(binary_header);
+    workingFile.write(0x0A); // ensure retro-compatibility, write the '\0'
+    workingFile.println();
     return;
   }
 
@@ -229,7 +239,7 @@ void readConfigFile(void) {
   int len = strlen(settingsArray);
   char settingString[MAX_SET_LENGTH];
   char mode[MAX_SET_LENGTH];
-
+  
   byte i = 0, j = 0, settingNumber = 0;
   for (i = 0; i < len; i++) {
     // pick out one setting from the line of text
@@ -248,15 +258,19 @@ void readConfigFile(void) {
           NewSerial.write((byte)0x03);
           break;
         case 10:
+          binary_header |= 0x0800;
           NewSerial.write((byte)0x43);
           break;
         case 100:
+          binary_header |= 0x1000;
           NewSerial.write((byte)0x83);
           break;
         case 1000:
+          binary_header |= 0x1800;
           NewSerial.write((byte)0xC3);
           break;
         default: // should the user enter an invalid choice, default back to 1 kHz
+          binary_header |= 0x1800;
           NewSerial.write((byte)0xC3);
           break;
       }
@@ -271,7 +285,7 @@ void readConfigFile(void) {
       strcpy(mode, settingString);
     }
 
-    else if (settingNumber == 2) { // channels
+    else if (settingNumber == 2) { // channels 
       // configure the channels to acquire afterwards, meaning BITalino will enter live (or simulated) mode
       no_channels = strlen(settingString);
 #if DEBUG
@@ -290,6 +304,7 @@ void readConfigFile(void) {
       }
       if (no_channels == 6) { // acquire all channels
         if ((strchr(mode, 's') - mode) == 0) { // simulated mode
+          binary_header |= 0x0400;
           state_cmd = 0xFE;
         }
         else { // live mode (or any other option, should the user enter an invalid choice, default back to live mode)
@@ -299,10 +314,12 @@ void readConfigFile(void) {
         NewSerial.println();
         NewSerial.println(F("all channels"));
 #endif
+        binary_header |= 0x03F0;
       }
       else { // acquire specific channels
         byte cmd = 0x00;
         if ((strchr(mode, 's') - mode) == 0) { // simulated mode
+          binary_header |= 0x0400;
           cmd = 0x02;
         }
         else { // live mode (or any other option, should the user enter an invalid choice, default back to live mode)
@@ -311,6 +328,7 @@ void readConfigFile(void) {
         for (byte n = 0; n < no_channels; n++) {
           int channel_no = settingString[n]-'0';
           if (channel_no >= 1 && channel_no <= 6) {
+            binary_header |= (1 << (channel_no + 3));
             cmd |= (1 << (channel_no + 1));
           }
           else { // there is a channel # that is < 1 or > 6, which is an invalid option, default back to acquire 4 channels
@@ -353,14 +371,19 @@ void readConfigFile(void) {
         sd_logging = 0;
 #if DEBUG
         NewSerial.println();
+        NewSerial.println(i1);
+        NewSerial.println(i2);
         NewSerial.print(F("wait to log"));
 #endif
       }
+      binary_header |= i1 << 3;
+      binary_header |= i2 << 2;
     }
 
     else if (settingNumber == 4) { // digital IO
-      int o1_init_state = 0, o2_init_state = 0;
-      if (strlen(settingString) != 2) { // invalid option, default back to [0, 0]
+      boolean o1_init_state = 0, o2_init_state = 0;
+      if (strlen(settingString) != 3) { // invalid option, default back to [0, 0]
+        // here use '3' for the strlen because of the '\0'
         o1_init_state = 0;
         o2_init_state = 0;
       }
@@ -388,6 +411,8 @@ void readConfigFile(void) {
       if (sd_logging == 1) { // the system will start logging immediately, set now the state of the digital outputs
         NewSerial.write((byte)digital_cmd);
       }
+      binary_header |= o1_init_state << 1;
+      binary_header |= o2_init_state;
     }
 
     else
@@ -397,14 +422,14 @@ void readConfigFile(void) {
     settingNumber++;
   }
 
-  // before we start logging, store the user-defined JSON configurations at the beginning of the log file as a commented header
+  // before we start logging, store the user-defined CSV configurations at the beginning of the log file (binary header)
   toggleLED(stat);
-  workingFile.print("# ");
-  for (int i = 0; i < strlen(settingsArray); i++)
-    workingFile.print(settingsArray[i]);
+  workingFile.write(binary_header >> 8);
+  workingFile.write(binary_header);
+  workingFile.write(0x0A); // ensure retro-compatibility, write the '\0'
   workingFile.println();
 
-  return;
+  return; 
 }
 
 byte appendFile(void) {
@@ -432,27 +457,29 @@ byte appendFile(void) {
 #endif
 
   digitalWrite(stat, HIGH); // turn on indicator LED
-
+  
   if (sd_logging == 0) {
     while (1) {
 		  digitalWrite(stat, LOW); // turn off stat LED
-		  // fetch a single byte at a time: we need to know the exact number of bytes the system receives so we can analyze the digital inputs
+		  // fetch a single byte at a time
+      // we need to know the exact number of bytes the system receives so we can analyze the digital inputs	  
 		  if (NewSerial.available() > 0) {
 			  int incomingByte = NewSerial.read();
 			  byte_counter++;
 			  if (byte_counter == (no_bytes - 1)) { // isolate the byte containing the state of the digital inputs (I1 and I2)
 				  incomingByte = (uint8_t)incomingByte;
 				  incomingByte = (incomingByte & 0xC0) >> 6;
-				  uint8_t i1_cur_state = (incomingByte & 0b10) >> 1;
-				  uint8_t i2_cur_state = (incomingByte & 0b01);
+				  uint8_t i1_cur_state = (incomingByte & 0b10) >> 1; 
+				  uint8_t i2_cur_state = (incomingByte & 0b01); 
 				  if (i1 == 1 && i2 == 0) { // look for change in input I1 only
 					  if (i1_cur_state == !i1_init_state)
-						  last_read = 1; // fetch the last byte with the sequence number + CRC so the logging to the SD card is done from the beginning
+						// fetch the last byte with the sequence number + CRC so logging to the SD card is done from the beginning  
+            last_read = 1; 
 				  }
 				  else if (i1 == 0 && i2 == 1) { // look for change in input I2 only
 					  if (i2_cur_state == !i2_init_state)
 						  last_read = 1;
-				  }
+				  }	
 				  else { // look for change in both inputs
 					  if ((i1_cur_state == !i1_init_state) && (i2_cur_state == !i2_init_state))
 						  last_read = 1;
@@ -469,13 +496,13 @@ byte appendFile(void) {
 		  }
 	  }
   }
-
+  
   // start recording incoming characters
   while (1) {
   	charsToRecord = NewSerial.read(buff, sizeof(buff));
   	if (charsToRecord > 0) {
       charsCount += charsToRecord;
-    	toggleLED(stat);
+    	toggleLED(stat); 
     	workingFile.write(buff, charsToRecord);
   	}
   	if (charsCount >= CHAR_COUNT) {
