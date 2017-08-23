@@ -15,6 +15,7 @@ from __future__ import division
 import argparse
 import sys
 import os
+import codecs
 import stat
 import json
 from datetime import datetime
@@ -196,7 +197,14 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
 
         decoded = {}
         decoded['settings'] = {}
-        if chr(header[0]) == '#':  # ensure retro-compatibility
+        if python2 and header[0] == '#':  # ensure retro-compatibility
+            csv_line = header[2:].decode('utf-8')
+            csv_settings = csv_line.split(',')
+            channels = ''.join(n for n in csv_settings[2] if n.isdigit())
+            no_channels = len(channels)
+            sampling_rate = int(csv_settings[0])
+            decoded['settings']['mode'] = csv_settings[1]
+        elif python3 and chr(header[0]) == '#':  # ensure retro-compatibility
             csv_line = header[2:].decode('utf-8')
             csv_settings = csv_line.split(',')
             channels = ''.join(n for n in csv_settings[2] if n.isdigit())
@@ -204,7 +212,7 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
             sampling_rate = int(csv_settings[0])
             decoded['settings']['mode'] = csv_settings[1]
         else:
-            header = int.from_bytes(header, byteorder='big')
+            header = int(codecs.encode(header, 'hex'), 16)
             binary_channels = (header & 0x03F0) >> 4
             channels = ''
             if binary_channels & 0x01:
@@ -571,10 +579,3 @@ if __name__ == "__main__":
         from itertools import imap
         from io import open
     main(sys.argv[1:])
-    # amp = 1023
-    # rises = np.where(np.diff(decoded['data'][:, 5]) == amp)[0]
-    # falls = np.where(np.diff(decoded['data'][:, 5]) == -amp)[0]
-    #
-    # print(len(decoded['data'][:, 5]))
-    # print(len(rises), rises)
-    # print(len(falls), falls)
