@@ -26,15 +26,16 @@ You will need:
 
 Firstly, **bend the leftmost pin of the header**, so that it stays in a straight horizontal direction instead of the original right angle.
 
-*insert image*
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/bent-header.jpg" width="148">
 
-Afterwards, place the header on the pads of OpenLog UART interface (at the bottom), so that the bent pin stays over the **GRN pad**. **Solder each of the 5 remaining pins** with the corresponding pad.
+Afterwards, place the header on the pads of OpenLog UART interface (at the bottom), so that the bent pin stays over the **GRN pad** (you may need to clip the bent pin so that it does not go beyond the pad). **Solder each of the 5 remaining pins** with the corresponding pad.
 
-*insert image*
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/header-only.jpg" width="200">
 
 Solder one end of the shunt directly on the **2nd pin from the right, on the top side of the MCU** and the other end to the **header pin that hangs above the GRN pad**. Make sure that there is **no solder touching the GRN pad**, it has to remain not connected.
 
-*insert image*
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/final-1.jpg" width="148">
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/final-3.jpg" width="300">
 
 ## How to configure the BITalino acquisition settings
 
