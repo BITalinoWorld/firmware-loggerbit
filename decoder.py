@@ -149,7 +149,7 @@ def encode_opensignals_header(decoded):
     aux_json_settings['time'] = datetime.now().strftime('%H:%M:%S.%f')[:-3]
     aux_json_settings['comments'] = ''
     aux_json_settings['device connection'] = 'OpenLog'
-    aux_json_settings['channels'] = json_channels
+    aux_json_settings['channels'] = [int(i) for i in list(json_channels)]
     aux_json_settings['date'] = datetime.now().strftime('%Y-%m-%d')
     aux_json_settings['mode'] = mode
     aux_json_settings['digital IO'] = [0, 0, 1, 1]
