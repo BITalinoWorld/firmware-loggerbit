@@ -181,9 +181,8 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
     packet_no = 0
     decoded_packets = 0
     percentage = 0
-    crc_fails = 0
     total_failed_pckts = 0
-    last_seq_no = 0
+    last_seq_no = -1
     failed_nSeq = []
     failed_indices = []
     with open(opensignals_filename, 'wb') as opensignals_file, open(openlog_filename, 'rb') as openlog_file:
@@ -304,7 +303,20 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
                 if crc == x & 0x0F:  # only fill data to the array if it passes CRC verification
                     decoded_packets += 1
                     data_acquired = np.zeros(5 + no_channels)
-                    last_seq_no = data_acquired[0] = decoded_data[-1] >> 4  # sequence number
+                    data_acquired[0] = decoded_data[-1] >> 4  # sequence number
+                    seq_diff = int(np.diff([last_seq_no, data_acquired[0]])[0])
+                    if seq_diff not in (1, -15):  # check if samples are consecutive
+                        failed_indices.append(packet_no)
+                        fail_time = packet_no / sampling_rate / 60
+                        print("LOST PACKET @", fail_time, "minutes =", fail_time / 60, "hours")
+                        if seq_diff < 0:
+                            no_failed_pckts = 15 + seq_diff
+                        else:
+                            no_failed_pckts = seq_diff - 1
+                        total_failed_pckts += no_failed_pckts
+                        failed_nSeq.append((last_seq_no, data_acquired[0]))
+                        print(no_failed_pckts, "PACKET(s) LOST:", last_seq_no, data_acquired[0], "\n")
+                    last_seq_no = data_acquired[0]
                     data_acquired[1] = decoded_data[-2] >> 7 & 0x01
                     data_acquired[2] = decoded_data[-2] >> 6 & 0x01
                     data_acquired[3] = decoded_data[-2] >> 5 & 0x01
@@ -323,7 +335,6 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
                         data_acquired[10] = decoded_data[-8] & 0x3F
                     np.savetxt(opensignals_file, [data_acquired], delimiter='\t', fmt='%i')
                 else:  # CRC fail
-                    crc_fails += 1
                     failed_indices.append(packet_no)
                     fail_time = packet_no/sampling_rate/60
                     print("CRC FAIL @", fail_time, "minutes =", fail_time/60, "hours")
