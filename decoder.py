@@ -224,7 +224,7 @@ def decode_bin_to_ascii(openlog_filename, opensignals_filename, callback, no_byt
                 channels += str(4)
             if binary_channels & 0x10:
                 channels += str(5)
-            if binary_channels & 0x30:
+            if binary_channels & 0x20:
                 channels += str(6)
             no_channels = len(channels)
             binary_sampling_rate = (header & 0x1800) >> 11
