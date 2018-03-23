@@ -37,6 +37,12 @@ Solder one end of the shunt directly on the **2nd pin from the right, on the top
 <img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/final-1.jpg" width="148">
 <img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/final-3.jpg" width="300">
 
+## How to connect BITalino to the OpenLog board
+
+The pin ordering of the OpenLog UART interface allows for the it to be directly connected with the MCU board of the BITalino. However, to ensure that all connections are properly done and that the TX and RX pins are switched, the **OpenLog must be plugged in with the microSD card facing up to the top side of the BITalino’s MCU** (the one where the microcontroller’s chip is soldered).
+
+<img src="https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/docs/images/Fritzing_Connections.png" width="450">
+
 ## How to configure the BITalino acquisition settings
 
 To begin with, place the [configuration file](https://github.com/BITalinoWorld/firmware-loggerbit/blob/master/config.txt) on the **root of a freshly formatted microSD card**. For formatting, use the oficial [SD memory card formatter](https://www.sdcard.org/downloads/formatter_4/) tool from the SD Association.
